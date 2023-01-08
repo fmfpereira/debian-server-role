@@ -1,0 +1,14 @@
+;    ___      ___                 _         
+;   / _/_ _  / _/__  ___ _______ (_)______ _
+;  / _/  ' \/ _/ _ \/ -_) __/ -_) / __/ _ `/
+; /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/ 
+;            /_/         
+; debian server fail2ban ssh config.
+
+[sshd]
+enabled  = true
+port     = ssh
+filter   = sshd
+logpath  = %(syslog_authpriv)s
+maxretry = {{ fail2ban.ssh.max_retries }}
+bantime = {{ fail2ban.ssh.bantime }}

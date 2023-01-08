@@ -1,0 +1,30 @@
+---
+#    ___      ___                 _         
+#   / _/_ _  / _/__  ___ _______ (_)______ _
+#  / _/  ' \/ _/ _ \/ -_) __/ -_) / __/ _ `/
+# /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/ 
+#            /_/         
+# debian server update/upgrade setup.
+
+- name: Update debian
+  ansible.builtin.apt:
+    update_cache: yes
+  become: yes
+
+- name: Full system upgrade
+  ansible.builtin.apt:
+    update_cache: yes
+    upgrade: yes
+  become: yes
+
+- name: Install rsync
+  ansible.builtin.apt:
+    name: rsync
+  become: yes
+  
+- name: Install sudo
+  ansible.builtin.apt:
+    name: sudo
+  become: yes
+  notify:
+    - Enable passwordless sudo

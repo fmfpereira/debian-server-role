@@ -1,0 +1,80 @@
+---
+#    ___      ___                 _         
+#   / _/_ _  / _/__  ___ _______ (_)______ _
+#  / _/  ' \/ _/ _ \/ -_) __/ -_) / __/ _ `/
+# /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/ 
+#            /_/         
+# debian server postfix setup.
+
+- name: Add postfix package default mailname
+  ansible.builtin.debconf:
+    name: postfix
+    question: postfix/mailname
+    vtype: string
+    value: '{{ postfix.fqdn }}'
+  become: yes
+
+- name: Add postfix package default instalation type
+  ansible.builtin.debconf:
+    name: postfix
+    question: postfix/main_mailer_type
+    vtype: string
+    value: 'Internet Site'
+  become: yes
+
+- name: Install postfix
+  ansible.builtin.apt:
+    name: postfix
+  become: yes
+
+- name: Add default relayhost
+  ansible.builtin.lineinfile:
+    path: /etc/postfix/main.cf
+    regexp: '^relayhost'
+    line: 'relayhost = [{{ postfix.relay.host }}]:{{postfix.relay.port}}'
+    backrefs: yes
+  become: yes
+
+- name: Add postfix smtp relay host configuration
+  ansible.builtin.blockinfile:
+    dest: /etc/postfix/main.cf
+    marker: '# {mark} Ansible managed postfix configuration'
+    block: |
+      smtp_sasl_auth_enable = yes
+      smtp_sasl_password_maps = hash:/etc/postfix/sasl/{{ postfix.relay.host }}
+      smtp_sasl_security_options = noanonymous
+      smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+      smtp_use_tls = yes
+      smtp_tls_security_level = encrypt
+      sender_canonical_classes = envelope_sender, header_sender
+      sender_canonical_maps =  regexp:/etc/postfix/sender_canonical_maps
+      smtp_header_checks = regexp:/etc/postfix/header_check
+  become: yes
+
+- name: Add sasl credentials
+  ansible.builtin.copy:
+    dest: /etc/postfix/sasl/{{ postfix.relay.host }}
+    content: '[{{ postfix.relay.host }}]:{{ postfix.relay.port }} {{ postfix.relay.username }}:{{ postfix.relay.password }}'
+    mode: 0600
+  become: yes
+
+
+- name: Redirect envelope to relay address
+  ansible.builtin.copy:
+    dest: /etc/postfix/sender_canonical_maps
+    content: '//    {{ postfix.relay.mail }}'
+    mode: 0644
+  become: yes
+
+- name: Redirect from header to relay address
+  ansible.builtin.copy:
+    dest: /etc/postfix/header_check
+    content: '/From:.*/ REPLACE From: {{ postfix.relay.mail }}'
+    mode: 0644
+  become: yes
+
+- name: Create sasl credentials database
+  ansible.builtin.command: /usr/sbin/postmap /etc/postfix/sasl/{{ postfix.relay.host }}
+  become: yes
+  notify:
+    - Restart postfix service

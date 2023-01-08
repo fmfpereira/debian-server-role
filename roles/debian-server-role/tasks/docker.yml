@@ -1,0 +1,28 @@
+---
+#    ___      ___                 _         
+#   / _/_ _  / _/__  ___ _______ (_)______ _
+#  / _/  ' \/ _/ _ \/ -_) __/ -_) / __/ _ `/
+# /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/ 
+#            /_/         
+# debian server docker setup.
+
+- name: Install docker
+  ansible.builtin.apt:
+    name:
+      - docker
+      - docker-compose
+    state: present
+  become: yes
+
+- name: Add current user to the docker group
+  ansible.builtin.user:
+    name: "{{ user.name }}"
+    groups: docker
+    append: yes
+  become: yes
+
+- name: Restart docker service
+  ansible.builtin.service:
+    name: docker
+    state: restarted
+  become: yes

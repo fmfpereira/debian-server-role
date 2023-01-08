@@ -1,0 +1,60 @@
+---
+#    ___      ___                 _         
+#   / _/_ _  / _/__  ___ _______ (_)______ _
+#  / _/  ' \/ _/ _ \/ -_) __/ -_) / __/ _ `/
+# /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/ 
+#            /_/         
+# fmfpereira debian server playbook.
+
+# Set dynamic host
+- hosts: localhost
+  gather_facts: no
+  vars_prompt:
+    - name: target_host
+      prompt: Please enter the target host/IP
+      private: no
+  tasks:
+    - add_host:
+        name: "{{ target_host }}"
+        groups: dynamically_created_hosts
+
+# debian server playbook
+- name: Setup a new debian server
+  # Which hosts are we applying
+  hosts: dynamically_created_hosts
+  # Which roles are we installing
+  roles:
+    - debian-server-role
+  vars_prompt:
+    - name: user.name
+      prompt: What is the username of the user to be created?
+      private: no
+      default: '{{ user.name }}'
+    - name: user.password
+      prompt: What is the password of the user to be created?
+      private: yes
+      confirm: true
+    - name: postfix.relay.host
+      prompt: What is the postfix relay host?
+      private: no
+      default: '{{ postfix.relay.host }}'
+    - name: postfix.relay.port
+      prompt: What is the postfix relay port?
+      private: no
+      default: '{{ postfix.relay.port }}'
+    - name: postfix.relay.mail
+      prompt: What is the postfix relay email?
+      private: no
+      default: '{{ postfix.relay.mail }}'
+    - name: postfix.relay.username
+      prompt: What is the postfix relay username?
+      private: no
+      default: '{{ postfix.relay.username }}'
+    - name: postfix.relay.password
+      prompt: What is the postfix relay password?
+      private: yes
+      confirm: true
+    - name: unattended_upgrades.email
+      prompt: What is the email to send unattended upgrades notifications?
+      private: no
+      default: '{{ unattended_upgrades.email }}'

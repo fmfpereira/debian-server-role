@@ -1,0 +1,61 @@
+---
+# dlamp_host unattended upgrades
+
+- name: Install unattended upgrades
+  ansible.builtin.apt:
+    name:
+      - unattended-upgrades
+      - apt-listchanges
+      - apticron
+  become: yes
+
+- name: Add unattended upgrades configurations
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/50unattended-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Download-Upgradeable-Packages "1";
+      APT::Periodic::AutocleanInterval "7";
+      APT::Periodic::Unattended-Upgrade "1";
+      Unattended-Upgrade::Mail "{{ unattended_upgrades.email }}";
+      // Automatically upgrade packages from these
+      Unattended-Upgrade::Origins-Pattern {
+      // "o=Debian,a=stable";
+      // "o=Debian,a=stable-updates";
+      // "o=Debian,a=proposed-updates";
+      "origin=Debian,codename=${distro_codename},label=Debian-Security";
+      };
+      Unattended-Upgrade::Automatic-Reboot "false";
+    mode: 0644
+  become: yes
+
+- name: Copy default apticron.conf file
+  ansible.builtin.copy:
+    src: /usr/lib/apticron/apticron.conf
+    dest: /etc/apticron/apticron.conf
+    remote_src: yes
+  become: yes
+
+- name: Add default email to apticron
+  ansible.builtin.lineinfile:
+    path: /etc/apticron/apticron.conf
+    regexp: '^EMAIL='
+    line: 'EMAIL={{ unattended_upgrades.email }}'
+    backrefs: yes
+  become: yes
+
+- name: Add default FQDN to apticron
+  ansible.builtin.lineinfile:
+    path: /etc/apticron/apticron.conf
+    regexp: '^# SYSTEM='
+    line: 'SYSTEM={{ postfix.fqdn }}'
+    backrefs: yes
+  become: yes
+
+- name: Add default email to apt-listchanges
+  ansible.builtin.lineinfile:
+    path: /etc/apt/listchanges.conf
+    regexp: '^email_address='
+    line: 'email_address={{ unattended_upgrades.email }}'
+    backrefs: yes
+  become: yes

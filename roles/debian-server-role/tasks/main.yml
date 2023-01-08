@@ -1,0 +1,15 @@
+---
+#    ___      ___                 _         
+#   / _/_ _  / _/__  ___ _______ (_)______ _
+#  / _/  ' \/ _/ _ \/ -_) __/ -_) / __/ _ `/
+# /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/ 
+#            /_/         
+# debian server setup tasks.
+
+- include_tasks: upgrade.yml
+- include_tasks: docker.yml
+- include_tasks: user.yml
+- include_tasks: iptables.yml
+- include_tasks: fail2ban.yml
+- include_tasks: postfix.yml
+- include_tasks: unattended-upgrades.yml

@@ -1,0 +1,20 @@
+---
+#    ___      ___                 _         
+#   / _/_ _  / _/__  ___ _______ (_)______ _
+#  / _/  ' \/ _/ _ \/ -_) __/ -_) / __/ _ `/
+# /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/ 
+#            /_/         
+# debian server fail2ban setup.
+
+- name: Install fail2ban
+  ansible.builtin.apt:
+    name: fail2ban
+  become: yes
+
+- name: Copy fail2ban ssh configuration template
+  ansible.builtin.template:
+    src: fail2ban.sshd.conf.j2
+    dest: '/etc/fail2ban/jail.d/sshd.conf'
+  become: yes
+  notify:
+  - Restart fail2ban service
