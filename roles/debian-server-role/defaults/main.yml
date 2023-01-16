@@ -7,25 +7,19 @@
 # debian server setup vars.
 
 # Default user.
-user:
-  name: 'ds'
+user_name: 'ds'
 
 # fail2ban variables.
-fail2ban:
-  ssh:
-    bantime: 3600
-    max_retries: 3
+fail2ban_ssh_bantime: 3600
+fail2ban_ssh_max_retries: 3
 
 # postfix variables.
-postfix:
-  fqdn: localhost
-  relay:
-    mail: user@example.com
-    host: smtp.gmail.com
-    port: 587
-    username: user@example.com
-    password: password
+postfix_fqdn: localhost
+postfix_relay_mail: user@example.com
+postfix_relay_host: smtp.gmail.com
+postfix_relay_port: 587
+postfix_relay_username: user@example.com
+postfix_relay_password: password
 
 # unattended upgrades variables.
-unattended_upgrades:
-  email: user@example.com
+unattended_upgrades_email: user@example.com

@@ -10,5 +10,5 @@ enabled  = true
 port     = ssh
 filter   = sshd
 logpath  = %(syslog_authpriv)s
-maxretry = {{ fail2ban.ssh.max_retries }}
-bantime = {{ fail2ban.ssh.bantime }}
+maxretry = {{ fail2ban_ssh_max_retries }}
+bantime = {{ fail2ban_ssh_bantime }}

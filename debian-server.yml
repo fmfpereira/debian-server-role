@@ -26,35 +26,35 @@
   roles:
     - debian-server-role
   vars_prompt:
-    - name: user.name
+    - name: user_name
       prompt: What is the username of the user to be created?
       private: no
-      default: '{{ user.name }}'
-    - name: user.password
+      default: '{{ user_name }}'
+    - name: user_password
       prompt: What is the password of the user to be created?
       private: yes
       confirm: true
-    - name: postfix.relay.host
+    - name: postfix_relay_host
       prompt: What is the postfix relay host?
       private: no
-      default: '{{ postfix.relay.host }}'
-    - name: postfix.relay.port
+      default: '{{ postfix_relay_host }}'
+    - name: postfix_relay_port
       prompt: What is the postfix relay port?
       private: no
-      default: '{{ postfix.relay.port }}'
-    - name: postfix.relay.mail
+      default: '{{ postfix_relay_port }}'
+    - name: postfix_relay_mail
       prompt: What is the postfix relay email?
       private: no
-      default: '{{ postfix.relay.mail }}'
-    - name: postfix.relay.username
+      default: '{{ postfix_relay_mail }}'
+    - name: postfix_relay_username
       prompt: What is the postfix relay username?
       private: no
-      default: '{{ postfix.relay.username }}'
-    - name: postfix.relay.password
+      default: '{{ postfix_relay_username }}'
+    - name: postfix_relay_password
       prompt: What is the postfix relay password?
       private: yes
       confirm: true
-    - name: unattended_upgrades.email
+    - name: unattended_upgrades_email
       prompt: What is the email to send unattended upgrades notifications?
       private: no
-      default: '{{ unattended_upgrades.email }}'
+      default: '{{ unattended_upgrades_email }}'

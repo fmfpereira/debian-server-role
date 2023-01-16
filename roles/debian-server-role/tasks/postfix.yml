@@ -11,7 +11,7 @@
     name: postfix
     question: postfix/mailname
     vtype: string
-    value: '{{ postfix.fqdn }}'
+    value: '{{ postfix_fqdn }}'
   become: yes
 
 - name: Add postfix package default instalation type
@@ -31,7 +31,7 @@
   ansible.builtin.lineinfile:
     path: /etc/postfix/main.cf
     regexp: '^relayhost'
-    line: 'relayhost = [{{ postfix.relay.host }}]:{{postfix.relay.port}}'
+    line: 'relayhost = [{{ postfix_relay_host }}]:{{postfix_relay_port}}'
     backrefs: yes
   become: yes
 
@@ -41,7 +41,7 @@
     marker: '# {mark} Ansible managed postfix configuration'
     block: |
       smtp_sasl_auth_enable = yes
-      smtp_sasl_password_maps = hash:/etc/postfix/sasl/{{ postfix.relay.host }}
+      smtp_sasl_password_maps = hash:/etc/postfix/sasl/{{ postfix_relay_host }}
       smtp_sasl_security_options = noanonymous
       smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
       smtp_use_tls = yes
@@ -53,8 +53,8 @@
 
 - name: Add sasl credentials
   ansible.builtin.copy:
-    dest: /etc/postfix/sasl/{{ postfix.relay.host }}
-    content: '[{{ postfix.relay.host }}]:{{ postfix.relay.port }} {{ postfix.relay.username }}:{{ postfix.relay.password }}'
+    dest: /etc/postfix/sasl/{{ postfix_relay_host }}
+    content: '[{{ postfix_relay_host }}]:{{ postfix_relay_port }} {{ postfix_relay_username }}:{{ postfix_relay_password }}'
     mode: 0600
   become: yes
 
@@ -62,19 +62,19 @@
 - name: Redirect envelope to relay address
   ansible.builtin.copy:
     dest: /etc/postfix/sender_canonical_maps
-    content: '//    {{ postfix.relay.mail }}'
+    content: '//    {{ postfix_relay_mail }}'
     mode: 0644
   become: yes
 
 - name: Redirect from header to relay address
   ansible.builtin.copy:
     dest: /etc/postfix/header_check
-    content: '/From:.*/ REPLACE From: {{ postfix.relay.mail }}'
+    content: '/From:.*/ REPLACE From: {{ postfix_relay_mail }}'
     mode: 0644
   become: yes
 
 - name: Create sasl credentials database
-  ansible.builtin.command: /usr/sbin/postmap /etc/postfix/sasl/{{ postfix.relay.host }}
+  ansible.builtin.command: /usr/sbin/postmap /etc/postfix/sasl/{{ postfix_relay_host }}
   become: yes
   notify:
     - Restart postfix service

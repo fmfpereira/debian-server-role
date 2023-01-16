@@ -6,9 +6,10 @@
 #            /_/         
 # debian server default user setup.
 
-- name: Create {{ user.name }} user
+- name: Create {{ user_name }} user
   ansible.builtin.user:
-    name: '{{ user.name }}'
+    name: '{{ user_name }}'
+    password: "{{ user_password|password_hash('sha512') }}"
     groups: docker
     state: present
     shell: '/bin/bash'
