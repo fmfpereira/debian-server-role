@@ -9,7 +9,7 @@
 - name: Install docker
   ansible.builtin.apt:
     name:
-      - docker
+      - docker.io
       - docker-compose
     state: present
   become: yes

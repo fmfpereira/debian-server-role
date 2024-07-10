@@ -8,7 +8,17 @@
 
 - name: Install fail2ban
   ansible.builtin.apt:
-    name: fail2ban
+    name:
+      - fail2ban
+      - python3-systemd
+  become: yes
+
+# Check https://groups.google.com/g/linux.debian.bugs.dist/c/6ag6r1jSCqg
+- name: Fix wrong configuration for journalmatch on the sshd filter file
+  ansible.builtin.replace:
+    path: /etc/fail2ban/filter.d/sshd.conf
+    regexp: 'sshd.service'
+    replace: 'ssh.service'
   become: yes
 
 - name: Copy fail2ban ssh configuration template

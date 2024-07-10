@@ -7,8 +7,6 @@
 
 [sshd]
 enabled  = true
-port     = ssh
-filter   = sshd
-logpath  = %(syslog_authpriv)s
+backend = systemd
 maxretry = {{ fail2ban_ssh_max_retries }}
 bantime = {{ fail2ban_ssh_bantime }}
