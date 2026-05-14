@@ -20,7 +20,7 @@
 
 - name: Restart netfilter-persistent service
   ansible.builtin.service:
-    name:  netfilter-persistent
+    name: netfilter-persistent
     state: restarted
   become: yes
 

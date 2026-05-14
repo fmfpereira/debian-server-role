@@ -1,12 +1,19 @@
 ---
-#    ___      ___                 _         
+#    ___      ___                 _
 #   / _/_ _  / _/__  ___ _______ (_)______ _
 #  / _/  ' \/ _/ _ \/ -_) __/ -_) / __/ _ `/
-# /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/ 
-#            /_/         
+# /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/
+#            /_/
 # debian server iptables setup.
 
 # Source: https://blog.ssdnodes.com/blog/tutorial-a-more-secure-ansible-playbook-part-2/
+
+- name: Install `netfilter-persistent` && `iptables-persistent` packages
+  ansible.builtin.apt:
+    name:
+      - iptables-persistent
+      - netfilter-persistent
+  become: yes
 
 - name: Add firewall rule - allow all loopback traffic
   ansible.builtin.iptables:
@@ -18,6 +25,7 @@
 
 - name: Add firewall rule - allow established connections
   ansible.builtin.iptables:
+    action: append
     chain: INPUT
     ctstate: ESTABLISHED,RELATED
     jump: ACCEPT
@@ -25,6 +33,7 @@
 
 - name: Add firewall rule - allow port 22/SSH traffic
   ansible.builtin.iptables:
+    action: append
     chain: INPUT
     destination_port: "22"
     jump: ACCEPT
@@ -33,14 +42,57 @@
 
 - name: Add firewall rule - drop any traffic without rule
   ansible.builtin.iptables:
+    action: append
     chain: INPUT
     jump: DROP
   become: yes
 
-- name: Install `netfilter-persistent` && `iptables-persistent` packages
-  ansible.builtin.apt:
-    name:
-      - iptables-persistent
-      - netfilter-persistent
+- name: Add IPv6 firewall rule - allow all loopback traffic
+  ansible.builtin.iptables:
+    ip_version: ipv6
+    action: append
+    chain: INPUT
+    in_interface: lo
+    jump: ACCEPT
   become: yes
-  notify: Restart netfilter-persistent service
+
+- name: Add IPv6 firewall rule - allow established connections
+  ansible.builtin.iptables:
+    ip_version: ipv6
+    action: append
+    chain: INPUT
+    ctstate: ESTABLISHED,RELATED
+    jump: ACCEPT
+  become: yes
+
+- name: Add IPv6 firewall rule - allow ICMPv6 (required for IPv6 to work)
+  ansible.builtin.iptables:
+    ip_version: ipv6
+    action: append
+    chain: INPUT
+    protocol: ipv6-icmp
+    jump: ACCEPT
+  become: yes
+
+- name: Add IPv6 firewall rule - allow port 22/SSH traffic
+  ansible.builtin.iptables:
+    ip_version: ipv6
+    action: append
+    chain: INPUT
+    destination_port: "22"
+    jump: ACCEPT
+    protocol: tcp
+  become: yes
+
+- name: Add IPv6 firewall rule - drop any traffic without rule
+  ansible.builtin.iptables:
+    ip_version: ipv6
+    action: append
+    chain: INPUT
+    jump: DROP
+  become: yes
+
+- name: Save iptables rules
+  ansible.builtin.command: netfilter-persistent save
+  changed_when: false
+  become: yes

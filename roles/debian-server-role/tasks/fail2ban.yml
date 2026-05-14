@@ -17,7 +17,7 @@
 - name: Fix wrong configuration for journalmatch on the sshd filter file
   ansible.builtin.replace:
     path: /etc/fail2ban/filter.d/sshd.conf
-    regexp: 'sshd.service'
+    regexp: 'sshd\.service'
     replace: 'ssh.service'
   become: yes
 
@@ -25,6 +25,9 @@
   ansible.builtin.template:
     src: fail2ban.sshd.conf.j2
     dest: '/etc/fail2ban/jail.d/sshd.conf'
+    owner: root
+    group: root
+    mode: '0644'
   become: yes
   notify:
   - Restart fail2ban service

@@ -6,15 +6,15 @@
 #            /_/         
 # debian server update/upgrade setup.
 
-- name: Update debian
-  ansible.builtin.apt:
-    update_cache: yes
-  become: yes
-
 - name: Full system upgrade
   ansible.builtin.apt:
     update_cache: yes
-    upgrade: yes
+    upgrade: full
+  become: yes
+
+- name: Remove orphaned packages
+  ansible.builtin.apt:
+    autoremove: yes
   become: yes
 
 - name: Install rsync

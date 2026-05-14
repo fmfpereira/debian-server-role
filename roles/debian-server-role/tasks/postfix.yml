@@ -24,15 +24,25 @@
 
 - name: Install postfix
   ansible.builtin.apt:
-    name: postfix
+    name:
+      - postfix
+      - libsasl2-modules
+  become: yes
+
+- name: Ensure /etc/postfix/sasl directory exists
+  ansible.builtin.file:
+    path: /etc/postfix/sasl
+    state: directory
+    owner: root
+    group: root
+    mode: '0750'
   become: yes
 
 - name: Add default relayhost
   ansible.builtin.lineinfile:
     path: /etc/postfix/main.cf
     regexp: '^relayhost'
-    line: 'relayhost = [{{ postfix_relay_host }}]:{{postfix_relay_port}}'
-    backrefs: yes
+    line: 'relayhost = [{{ postfix_relay_host }}]:{{ postfix_relay_port }}'
   become: yes
 
 - name: Add postfix smtp relay host configuration
@@ -44,20 +54,24 @@
       smtp_sasl_password_maps = hash:/etc/postfix/sasl/{{ postfix_relay_host }}
       smtp_sasl_security_options = noanonymous
       smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
-      smtp_use_tls = yes
       smtp_tls_security_level = encrypt
       sender_canonical_classes = envelope_sender, header_sender
-      sender_canonical_maps =  regexp:/etc/postfix/sender_canonical_maps
+      sender_canonical_maps = regexp:/etc/postfix/sender_canonical_maps
       smtp_header_checks = regexp:/etc/postfix/header_check
   become: yes
 
 - name: Add sasl credentials
-  ansible.builtin.copy:
+  ansible.builtin.template:
+    src: postfix_sasl_passwd.j2
     dest: /etc/postfix/sasl/{{ postfix_relay_host }}
-    content: '[{{ postfix_relay_host }}]:{{ postfix_relay_port }} {{ postfix_relay_username }}:{{ postfix_relay_password }}'
-    mode: 0600
+    owner: root
+    group: root
+    mode: '0600'
+  no_log: true
+  register: sasl_credentials
   become: yes
-
+  notify:
+    - Restart postfix service
 
 - name: Redirect envelope to relay address
   ansible.builtin.copy:
@@ -75,6 +89,7 @@
 
 - name: Create sasl credentials database
   ansible.builtin.command: /usr/sbin/postmap /etc/postfix/sasl/{{ postfix_relay_host }}
+  no_log: true
+  when: sasl_credentials.changed
+  changed_when: sasl_credentials.changed
   become: yes
-  notify:
-    - Restart postfix service
