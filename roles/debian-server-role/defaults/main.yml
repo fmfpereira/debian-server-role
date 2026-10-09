@@ -11,6 +11,7 @@ user_name: 'ds'
 
 # fail2ban variables.
 fail2ban_ssh_bantime: 3600
+fail2ban_ssh_findtime: 600
 fail2ban_ssh_max_retries: 3
 
 # postfix variables.

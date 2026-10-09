@@ -1,28 +1,64 @@
 ---
-#    ___      ___                 _         
+#    ___      ___                 _
 #   / _/_ _  / _/__  ___ _______ (_)______ _
 #  / _/  ' \/ _/ _ \/ -_) __/ -_) / __/ _ `/
-# /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/ 
-#            /_/         
+# /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/
+#            /_/
 # debian server docker setup.
 
-- name: Install docker
+- name: Install Docker prerequisites
   ansible.builtin.apt:
     name:
-      - docker.io
-      - docker-compose
+      - ca-certificates
+      - curl
     state: present
   become: yes
 
-- name: Add current user to the docker group
-  ansible.builtin.user:
-    name: "{{ user_name }}"
-    groups: docker
-    append: yes
+- name: Ensure /etc/apt/keyrings directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
   become: yes
 
-- name: Restart docker service
+- name: Download Docker GPG key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    owner: root
+    group: root
+    mode: '0644'
+  become: yes
+
+- name: Get system architecture
+  ansible.builtin.command: dpkg --print-architecture
+  register: dpkg_arch
+  changed_when: false
+
+- name: Add Docker apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch={{ dpkg_arch.stdout }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+    state: present
+    filename: docker
+  become: yes
+
+- name: Install Docker
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Enable and start Docker service
   ansible.builtin.service:
     name: docker
-    state: restarted
+    state: started
+    enabled: yes
   become: yes

@@ -18,11 +18,7 @@
       APT::Periodic::AutocleanInterval "7";
       APT::Periodic::Unattended-Upgrade "1";
       Unattended-Upgrade::Mail "{{ unattended_upgrades_email }}";
-      // Automatically upgrade packages from these
       Unattended-Upgrade::Origins-Pattern {
-      // "o=Debian,a=stable";
-      // "o=Debian,a=stable-updates";
-      // "o=Debian,a=proposed-updates";
       "origin=Debian,codename=${distro_codename},label=Debian-Security";
       };
       Unattended-Upgrade::Automatic-Reboot "false";
@@ -34,6 +30,7 @@
     src: /usr/lib/apticron/apticron.conf
     dest: /etc/apticron/apticron.conf
     remote_src: yes
+    force: no
   become: yes
 
 - name: Add default email to apticron

@@ -13,4 +13,5 @@
     groups: docker
     state: present
     shell: '/bin/bash'
+  no_log: true
   become: yes

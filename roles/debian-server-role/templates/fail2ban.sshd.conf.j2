@@ -8,5 +8,6 @@
 [sshd]
 enabled  = true
 backend = systemd
+findtime = {{ fail2ban_ssh_findtime }}
 maxretry = {{ fail2ban_ssh_max_retries }}
 bantime = {{ fail2ban_ssh_bantime }}
