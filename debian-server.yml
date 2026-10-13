@@ -31,7 +31,7 @@
       private: no
       default: '{{ user_name }}'
     - name: user_password
-      prompt: What is the password of the user to be created?
+      prompt: What is the password of the user to be created? (empty for key-only login)
       private: yes
       confirm: true
     - name: postfix_relay_host

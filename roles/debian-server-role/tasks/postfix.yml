@@ -44,21 +44,37 @@
     regexp: '^relayhost'
     line: 'relayhost = [{{ postfix_relay_host }}]:{{ postfix_relay_port }}'
   become: yes
+  notify:
+    - Restart postfix service
+
+# A relay-only server does not accept mail from the network.
+- name: Listen on the configured interfaces only
+  ansible.builtin.lineinfile:
+    path: /etc/postfix/main.cf
+    regexp: '^inet_interfaces'
+    line: 'inet_interfaces = {{ postfix_inet_interfaces }}'
+  become: yes
+  notify:
+    - Restart postfix service
 
 - name: Add postfix smtp relay host configuration
   ansible.builtin.blockinfile:
     dest: /etc/postfix/main.cf
     marker: '# {mark} Ansible managed postfix configuration'
     block: |
-      smtp_sasl_auth_enable = yes
+      smtp_sasl_auth_enable = {{ 'yes' if postfix_relay_sasl else 'no' }}
+      {% if postfix_relay_sasl %}
       smtp_sasl_password_maps = hash:/etc/postfix/sasl/{{ postfix_relay_host }}
       smtp_sasl_security_options = noanonymous
+      {% endif %}
       smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
       smtp_tls_security_level = encrypt
       sender_canonical_classes = envelope_sender, header_sender
       sender_canonical_maps = regexp:/etc/postfix/sender_canonical_maps
       smtp_header_checks = regexp:/etc/postfix/header_check
   become: yes
+  notify:
+    - Restart postfix service
 
 - name: Add sasl credentials
   ansible.builtin.template:
@@ -70,6 +86,19 @@
   no_log: true
   register: sasl_credentials
   become: yes
+  when: postfix_relay_sasl
+  notify:
+    - Restart postfix service
+
+- name: Remove sasl credentials when the relay authorizes by IP
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - /etc/postfix/sasl/{{ postfix_relay_host }}
+    - /etc/postfix/sasl/{{ postfix_relay_host }}.db
+  become: yes
+  when: not postfix_relay_sasl
   notify:
     - Restart postfix service
 
@@ -90,6 +119,6 @@
 - name: Create sasl credentials database
   ansible.builtin.command: /usr/sbin/postmap /etc/postfix/sasl/{{ postfix_relay_host }}
   no_log: true
-  when: sasl_credentials.changed
+  when: postfix_relay_sasl and sasl_credentials.changed
   changed_when: sasl_credentials.changed
   become: yes

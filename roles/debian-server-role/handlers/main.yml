@@ -18,6 +18,18 @@
     state: restarted
   become: yes
 
+- name: Restart ssh service
+  ansible.builtin.service:
+    name: ssh
+    state: restarted
+  become: yes
+
+- name: Restart docker service
+  ansible.builtin.service:
+    name: docker
+    state: restarted
+  become: yes
+
 - name: Restart netfilter-persistent service
   ansible.builtin.service:
     name: netfilter-persistent

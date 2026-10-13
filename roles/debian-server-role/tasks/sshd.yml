@@ -1,0 +1,35 @@
+---
+#    ___      ___                 _
+#   / _/_ _  / _/__  ___ _______ (_)______ _
+#  / _/  ' \/ _/ _ \/ -_) __/ -_) / __/ _ `/
+# /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/
+#            /_/
+# debian server sshd hardening (only when sshd_hardening is true).
+
+- name: Refuse to harden sshd without authorized keys
+  ansible.builtin.assert:
+    that: user_ssh_authorized_keys | length > 0
+    fail_msg: sshd_hardening needs user_ssh_authorized_keys, or nobody can log in afterwards
+  when: sshd_hardening
+
+# Drop-ins are read before the main file and the first value wins.
+- name: Harden sshd
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/10-hardening.conf
+    content: |
+      PermitRootLogin no
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      AuthenticationMethods publickey
+      AllowUsers {{ user_name }}
+      X11Forwarding no
+      MaxAuthTries 3
+      LoginGraceTime 30
+    owner: root
+    group: root
+    mode: '0644'
+    validate: /usr/sbin/sshd -t -f %s
+  become: yes
+  when: sshd_hardening
+  notify:
+    - Restart ssh service
