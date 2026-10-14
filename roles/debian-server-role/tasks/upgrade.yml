@@ -26,5 +26,14 @@
   ansible.builtin.apt:
     name: sudo
   become: yes
-  notify:
-    - Enable passwordless sudo
+
+# A task, not a handler: images that ship sudo (Hetzner, most clouds) never
+# trigger the install, and the %sudo group must still be passwordless.
+- name: Enable passwordless sudo for the sudo group
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^%sudo'
+    line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+  become: yes
