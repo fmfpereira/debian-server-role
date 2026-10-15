@@ -20,7 +20,7 @@ Ansible role for provisioning a Debian server with security hardening and essent
 - Ansible >= 2.9
 - Python 3 on the control node
 - SSH access as `root` to the target host, or as a sudo user when re-running after `sshd_hardening`
-- A Debian-based target system (tested on Debian 11/12)
+- A Debian-based target system (tested on Debian 11/12, and 13 on arm64)
 
 Install required collections:
 
