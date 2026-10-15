@@ -18,17 +18,20 @@
     state: restarted
   become: yes
 
+- name: Restart ssh service
+  ansible.builtin.service:
+    name: ssh
+    state: restarted
+  become: yes
+
+- name: Restart docker service
+  ansible.builtin.service:
+    name: docker
+    state: restarted
+  become: yes
+
 - name: Restart netfilter-persistent service
   ansible.builtin.service:
     name: netfilter-persistent
     state: restarted
   become: yes
-
-- name: Enable passwordless sudo
-  ansible.builtin.lineinfile:
-    path: /etc/sudoers
-    state: present
-    regexp: '^%sudo'
-    line: '%sudo ALL=(ALL) NOPASSWD: ALL'
-    validate: 'visudo -cf %s'
-  become: yes 

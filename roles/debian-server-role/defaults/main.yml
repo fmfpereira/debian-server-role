@@ -1,13 +1,25 @@
 ---
-#    ___      ___                 _         
+#    ___      ___                 _
 #   / _/_ _  / _/__  ___ _______ (_)______ _
 #  / _/  ' \/ _/ _ \/ -_) __/ -_) / __/ _ `/
-# /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/ 
-#            /_/         
+# /_//_/_/_/_// .__/\__/_/  \__/_/_/  \_,_/
+#            /_/
 # debian server setup vars.
 
 # Default user.
 user_name: 'ds'
+# Password of the user; empty creates the account without one (key-only login,
+# together with user_ssh_authorized_keys).
+user_password: ''
+# Public keys allowed to log in as the user. When set, they are the only ones.
+user_ssh_authorized_keys: []
+
+# sshd hardening: key-only login, only user_name, no root, no passwords.
+# Needs user_ssh_authorized_keys, or nobody can log in afterwards.
+sshd_hardening: false
+
+# Contents of /etc/docker/daemon.json; empty leaves the file alone.
+docker_daemon_options: {}
 
 # fail2ban variables.
 fail2ban_ssh_bantime: 3600
@@ -16,11 +28,21 @@ fail2ban_ssh_max_retries: 3
 
 # postfix variables.
 postfix_fqdn: localhost
+postfix_inet_interfaces: loopback-only
 postfix_relay_mail: user@example.com
 postfix_relay_host: smtp.gmail.com
 postfix_relay_port: 587
+# false for a relay that authorizes by IP (e.g. smtp-relay.gmail.com): no
+# credentials are stored on the server.
+postfix_relay_sasl: true
 postfix_relay_username: user@example.com
 postfix_relay_password: password
 
 # unattended upgrades variables.
 unattended_upgrades_email: user@example.com
+# Origins-Pattern entries; add e.g. "origin=Docker,suite=${distro_codename}"
+# for Docker's repository.
+unattended_upgrades_origins:
+  - "origin=Debian,codename=${distro_codename},label=Debian-Security"
+unattended_upgrades_automatic_reboot: false
+unattended_upgrades_automatic_reboot_time: "04:30"

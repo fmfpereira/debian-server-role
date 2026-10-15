@@ -62,3 +62,15 @@
     state: started
     enabled: yes
   become: yes
+
+- name: Configure the Docker daemon
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    content: "{{ docker_daemon_options | to_nice_json }}\n"
+    owner: root
+    group: root
+    mode: '0644'
+  become: yes
+  when: docker_daemon_options | length > 0
+  notify:
+    - Restart docker service
